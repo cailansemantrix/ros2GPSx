@@ -148,7 +148,7 @@ class GPSPublisher : public rclcpp::Node
       rcl_interfaces::msg::IntegerRange range;
       range.from_value = 4800;
       range.step = 1;
-      range.to_value = 115200;
+      range.to_value = 460800;
       rcl_interfaces::msg::ParameterDescriptor comm_speed_descriptor;
       comm_speed_descriptor.description = "Serial interface speed setting in Baud";
       comm_speed_descriptor.integer_range.push_back(range);
@@ -240,6 +240,8 @@ int GPSPublisher::openConnection(void)
     cfsetispeed(&tty, B57600);
   else if(serial_speed==115200)
     cfsetispeed(&tty, B115200);
+  else if(serial_speed==460800)
+    cfsetispeed(&tty, B460800);
 
   
   if (tcsetattr(fd, TCSANOW, &tty) != 0)
