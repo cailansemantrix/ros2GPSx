@@ -13,4 +13,4 @@ It is currently developed and tested with ROS2 Foxy Fitzroy and Humble Hawksbill
 
 Additional parameters can be added for connection speed and connection port e.g.
 
-```ros2 run gpsx gps_node --ros-args -p "comm_port:=/dev/ttyUSB0" -p "comm_speed:=460800"```
+```_ros2 run gpsx gps_node --ros-args -p "comm_port:=/dev/ttyUSB0" -p "comm_speed:=460800"_```
