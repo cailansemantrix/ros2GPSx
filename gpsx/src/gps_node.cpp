@@ -144,7 +144,7 @@ class GPSPublisher : public rclcpp::Node
       vtg_.true_course_magnetic=0.0;
 
       // declare parameters
-      this->declare_parameter<std::string>("comm_port", "/dev/ttyS0");
+      this->declare_parameter<std::string>("comm_port", "/dev/ttyUSB1");
       rcl_interfaces::msg::IntegerRange range;
       range.from_value = 4800;
       range.step = 1;
@@ -188,7 +188,7 @@ void GPSPublisher::run(void)
 {
   publisher_ = this->create_publisher<gpsx::msg::Gpsx>("gpsx", 10);
   service_ = this->create_service<gpsx::srv::GetSatList>("get_sat_list",&listGps);
-  timer_ = this->create_wall_timer(50ms, std::bind(&GPSPublisher::timer_callback, this));
+  timer_ = this->create_wall_timer(500ms, std::bind(&GPSPublisher::timer_callback, this));
 }
  
 
@@ -414,20 +414,21 @@ int GPSPublisher::readMessage(void)
           break;
           case 10: // unit of altitude, usually Meter
             if((tokens[i].compare("M")!=0) and (tokens[i].compare("m")!=0))
-              RCLCPP_ERROR(this->get_logger(),"GPS does not report altitude in meter! %s",tokens[i].c_str()); 
+              // RCLCPP_ERROR(this->get_logger(),"GPS does not report altitude in meter! %s",tokens[i].c_str()); 
           break;
           case 11: // geoidal separation
             gga_.separation=safe_stod(tokens[i]);
           break;
           case 12:
             if((tokens[i].compare("M")!=0) and (tokens[i].compare("m")!=0))
-              RCLCPP_ERROR(this->get_logger(),"GPS does not report geoidal separation in meter! %s",tokens[i].c_str());           
+              // RCLCPP_ERROR(this->get_logger(),"GPS does not report geoidal separation in meter! %s",tokens[i].c_str());           
           break;
           // ignoring the rest
         }
       }
+      newdata_ = true;
       //RCLCPP_INFO(this->get_logger(),"UTCtime: "+ UTCtime +" fix:" + std::to_string(fix) + " satellites: " + std::to_string(satellites) + " dilution: " + std::to_string(dilution) + " separation: "+ std::to_string(separation));
-      std::cout << "UTCtime: " << gga_.UTCtime << " fix:" << std::to_string(gga_.fix) << " satellites: " << std::to_string(gga_.satellites) << " dilution: " << std::to_string(gga_.dilution) << " separation: " << std::to_string(gga_.separation) << " latitude: " << std::to_string(gga_.latitude) << " longitude: " << std::to_string(gga_.longitude) << std::endl;
+      // std::cout << "UTCtime: " << gga_.UTCtime << " fix:" << std::to_string(gga_.fix) << " satellites: " << std::to_string(gga_.satellites) << " dilution: " << std::to_string(gga_.dilution) << " separation: " << std::to_string(gga_.separation) << " latitude: " << std::to_string(gga_.latitude) << " longitude: " << std::to_string(gga_.longitude) << std::endl;
     }
     // else if(strncmp(readBuffer,"$GPVTG",6)==0)
     else if(msgRead.compare(3,3,std::string("VTG"))==0)
@@ -470,7 +471,7 @@ int GPSPublisher::readMessage(void)
           break;                              
         }
       }
-      std::cout << "true course: " << std::to_string(vtg_.true_course) << " magnetic:" << std::to_string(vtg_.true_course_magnetic) << " ground speed: " << std::to_string(vtg_.ground_speed) << std::endl;
+      // std::cout << "true course: " << std::to_string(vtg_.true_course) << " magnetic:" << std::to_string(vtg_.true_course_magnetic) << " ground speed: " << std::to_string(vtg_.ground_speed) << std::endl;
     }
     // Satellites in view message, due to many satellites this is provided with multiple satellites (4 per line)
     else if(msgRead.compare(3,3,std::string("GSV"))==0)
@@ -554,7 +555,7 @@ int GPSPublisher::readMessage(void)
             break;  
           }
         }
-        std::cout << "Number of GPS satellites: "<< gsv_.satInView << " Message number: " << gsv_.currCount << " ID sat 1 " << gsv_.sats[0].id << " ID sat 2 " << gsv_.sats[1].id << " ID sat 3 " << gsv_.sats[2].id << " ID sat 4 " << gsv_.sats[3].id << std::endl;
+        // std::cout << "Number of GPS satellites: "<< gsv_.satInView << " Message number: " << gsv_.currCount << " ID sat 1 " << gsv_.sats[0].id << " ID sat 2 " << gsv_.sats[1].id << " ID sat 3 " << gsv_.sats[2].id << " ID sat 4 " << gsv_.sats[3].id << std::endl;
         int limit=0;
         // decide how many satellites are to be copied
         if(gsv_.currCount<gsv_.msgCount)
@@ -651,12 +652,12 @@ int GPSPublisher::readMessage(void)
       else if(msgRead.compare(1,2,"GA")==0)
       {
         // these are the Galileo satellites
-        std::cout << "message read GA: " << msgRead << std::endl;
+        // std::cout << "message read GA: " << msgRead << std::endl;
       }
     }
     else
     {
-      std::cout << "Unknown message: " << msgRead << std::endl;
+      // std::cout << "Unknown message: " << msgRead << std::endl;
     }
   }
   else
